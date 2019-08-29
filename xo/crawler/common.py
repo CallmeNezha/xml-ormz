@@ -66,5 +66,5 @@ def install_coloredlogs(level='INFO'):
         import coloredlogs
         coloredlogs.install(level=level, logger=logger)
     except ImportError:
-        logging.info("xml-orm: coloredlogs not installed using plain logging style.")
+        logging.info("xml-ormz: coloredlogs not installed using plain logging style.")
     return logger

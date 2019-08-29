@@ -17,9 +17,9 @@ CLASSIFIERS = [
 ] 
 
 # calling the setup function  
-setup(name='xml-orm', 
+setup(name='xml-ormz', 
       version='0.0.1', 
-      description='xml-orm database library mapping collections of xml into python model objects', 
+      description='xml-ormz database library mapping collections of xml into python model objects', 
       long_description=long_description, 
       url='', 
       author='ZIJIAN JIANG', 

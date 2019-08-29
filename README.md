@@ -6,7 +6,7 @@
 
 
 
-xml-ormz is a orm(Object-relational mapping) library for mapping a collection of relational xml files into native python object. It is able to parse xml document tree into hierarchical class `model` objects. When parsing xml document tree into objects, it will check the attributes' `field` type; value content; amount of elements; numbers; `regular expressions`; etc. These validation rules can all be defined by user intuitively. As another important feature, `object relationships` can be built by using `finders`  in xml-orm, `finder` is a user customized callable object for recursively traverse the trees to build references between any of two or more objects. So in the end of it, you will get a validated mapped relational python objects model *(with no concern about invalid attribute type or values; missing attributes; wrong amount of elements; missing relationships; invalid schema...)*.  In my philosophy of data processing (xml format is one kind of highly complex hierarchical data), all input data should be validated before any following processes, must not let the malignant propagate, and xml-orm do that properly.
+xml-ormz is a orm(Object-relational mapping) library for mapping a collection of relational xml files into native python object. It is able to parse xml document tree into hierarchical class `model` objects. When parsing xml document tree into objects, it will check the attributes' `field` type; value content; amount of elements; numbers; `regular expressions`; etc. These validation rules can all be defined by user intuitively. As another important feature, `object relationships` can be built by using `finders`  in xml-ormz, `finder` is a user customized callable object for recursively traverse the trees to build references between any of two or more objects. So in the end of it, you will get a validated mapped relational python objects model *(with no concern about invalid attribute type or values; missing attributes; wrong amount of elements; missing relationships; invalid schema...)*.  In my philosophy of data processing (xml format is one kind of highly complex hierarchical data), all input data should be validated before any following processes, must not let the malignant propagate, and xml-orm do that properly.
 
 
 
@@ -14,7 +14,7 @@ xml-ormz is a orm(Object-relational mapping) library for mapping a collection of
 
 Command below will do the trick, if you want logging with color, it is optional to install `coloredlogs`.
 
-`pip install xml-orm` 
+`pip install xml-ormz` 
 
 
 
@@ -171,7 +171,7 @@ from model import Addresses, Contacts
 
 class Finder(object):
     def __init__(self, orm_list):
-        # Here the parameter `orm_list` is assigned by xml-orm, `orm_list = [ contact_map, addresses_map ]`
+        # Here the parameter `orm_list` is assigned by xml-ormz, `orm_list = [ contact_map, addresses_map ]`
         self.addresses = [m for m in orm_list if "/Addresses" in m][0]
 
     def __call__(self, person):
