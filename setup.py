@@ -7,7 +7,7 @@ with open("README.md", "r") as file:
 REQUIREMENTS = ["lxml"]
 
 CLASSIFIERS = [ 
-    'Development Status :: 1 - Beta', 
+    'Development Status :: 1 - Planning', 
     'Intended Audience :: Developers', 
     'Topic :: XML ORM', 
     'License :: OSI Approved :: MIT License', 
@@ -21,7 +21,7 @@ setup(name='xml-ormz',
       version='0.0.1', 
       description='xml-ormz database library mapping collections of xml into python model objects', 
       long_description=long_description, 
-      url='', 
+      url='https://github.com/CallmeNezha/xml-ormz', 
       author='ZIJIAN JIANG', 
       author_email='jiangzijian77@gmail.com', 
       license='MIT', 
