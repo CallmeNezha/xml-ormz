@@ -1,10 +1,12 @@
-import logging
+import sys
+import functools
+
+from loguru import logger
+
 from .field import Field, Optional
 from .basicfields import ForeignKeyField, ForeignKeyArrayField
-import functools
-import sys
 
-logging = logging.getLogger(__name__)
+
 
 class ModelMetaclass(type):
     """
@@ -14,13 +16,13 @@ class ModelMetaclass(type):
         if name=='Model':
             return type.__new__(cls, name, bases, attrs)
         tableName = attrs.get('__table__', None) or name
-        logging.info('found model: %s (table: %s)' % (name, tableName))
+        logger.info('found model: %s (table: %s)' % (name, tableName))
         mappings = dict()
         fields = []
         primaryKey = None
         for k, v in attrs.items():
             if isinstance(v, Field):
-                logging.info('  found mapping: %s ==> %s' % (k, v))
+                logger.info('  found mapping: %s ==> %s' % (k, v))
                 mappings[k] = v
                 if v.primary_key:
                     if primaryKey:
@@ -29,15 +31,15 @@ class ModelMetaclass(type):
                 else:
                     fields.append(k)
             elif isinstance(v, Optional):
-                logging.info('  found mapping: %s ==> %s' % (k, v))
+                logger.info('  found mapping: %s ==> %s' % (k, v))
                 mappings[k] = v
                 fields.append(f"Optional({k})")
             elif isinstance(v, ForeignKeyField):
-                logging.info('  found mapping: %s ==> %s' % (k, v))
+                logger.info('  found mapping: %s ==> %s' % (k, v))
                 mappings[k] = v
                 fields.append(f"ForeignKeyField({k})")
             elif isinstance(v, ForeignKeyArrayField):
-                logging.info('  found mapping: %s ==> %s' % (k, v))
+                logger.info('  found mapping: %s ==> %s' % (k, v))
                 mappings[k] = v
                 fields.append(f"ForeignKeyArrayField({k})")
             #endif
@@ -84,33 +86,39 @@ class Model(dict, metaclass=ModelMetaclass):
         # Check attributes are valid
         for k, v in self.__mappings__.items():
 
-            # Filed type or Optional(Field) type
+            # Filed type or Optional(Field) type including:
+            # StringField ; IntegerField ; FloatField
             if isinstance(v, Field) or type(v) == Optional:
                 isOptional = type(v) == Optional
                 if k not in kw and not isOptional:
-                    raise AttributeError(f"'{qualname}': Missing required attribute: '{k}'.")
+                    raise AttributeError(f"'{qualname}': Missing required attribute: '{k}'")
                 if k not in kw and isOptional:
                     pass
                 elif type(kw[k]) == type(None) and isOptional:
                     pass
                 elif type(kw[k]) != v.column_type:
-                    raise AttributeError(f"'{qualname}': Wrong attribute type, expect: '{v.column_type.__name__}', got: '{type(kw[k])}'.")
+                    raise AttributeError(f"'{qualname}': Wrong attribute '{k}' type, expect: '{v.column_type.__name__}', got: '{type(kw[k])}'")
                 elif v.is_valid(kw[k]) == False:
                     raise AttributeError(f"'{qualname}': Attribute error, failed at attribute '{k}' constraint '{v.r}', got: '{kw[k]}'")
-
-            # (2019-08-28 15:54:06) remove ArrayField @Nezha
-            # # ArrayField type
-            # elif isinstance(v, ArrayField):
-            #     if k not in kw:
-            #         raise AttributeError(f"'{qualname}': Missing required attribute: '{k}'.")
-            #     for e in kw[k]:
-            #         if type(e) != v.column_type:
-            #             raise AttributeError(f"'{qualname}': Wrong attribute type, expect: '{v.column_type.__name__}', got: '{type(e)}' in array.")
+            
+            # ForeignKeyField ;
+            elif type(v) == ForeignKeyField:
+                """
+                It will be assigned at finder runtime
+                """
+                pass
+            
+            # ForeignKeyArrayField ;
+            elif type(v) == ForeignKeyArrayField:
+                """
+                It will be assigned at finder runtime
+                """
+                pass
         #!for 
 
         remains = kw.keys() - ( set(self.__mappings__.keys()).union( { 'text' } ) )
         if len(remains) > 0:
-            logging.warning(f"'{qualname}': Assigning undefined attributes: '{remains}'.")
+            logger.warninging(f"'{qualname}': Assigning undefined attributes: '{remains}'.")
 
         super(Model, self).__init__(**kw)
        
@@ -136,6 +144,21 @@ class Model(dict, metaclass=ModelMetaclass):
             raise AttributeError(r"'Model' object has no attribute '%s'" % key)
 
     def __setattr__(self, key, value):
+
+        field = self.getField(key)
+        if type(field) == ForeignKeyField:
+            if value!= None and field.column_type != type(value).__qualname__:
+                raise AttributeError(f"'{self.__class__.__qualname__}': Wrong attribute '{key}' type, got '{type(value).__qualname__}', expect '{field.column_type}'.")
+
+        elif type(field) == ForeignKeyArrayField:
+            if type(value) != list:
+                raise AttributeError(f"'{self.__class__.__qualname__}': Wrong attribute '{key}' type, got '{type(value).__qualname__}', expect 'List({field.column_type})'")
+            
+            else:
+                wrongs = [ v for v in value if type(v).__qualname__ != field.column_type ]
+                if len( wrongs ) > 0:
+                    raise AttributeError(f"'{self.__class__.__qualname__}': Wrong attribute '{key}' type, got '{wrongs}', expect 'List({field.column_type})'")
+
         self[key] = value
 
     def getValue(self, key):
@@ -147,7 +170,7 @@ class Model(dict, metaclass=ModelMetaclass):
             field = self.__mappings__[key]
             if field.default is not None:
                 value = field.default() if callable(field.default) else field.default
-                logging.debug('using default value for %s: %s' % (key, str(value)))
+                logger.debug('using default value for %s: %s' % (key, str(value)))
                 setattr(self, key, value)
         return value
 

@@ -1,22 +1,19 @@
 
-from lxml import etree
-from .common import xml2tree, strip_xpath_index, get_all_class_types
-from typing import List, Dict, Tuple, Any
-from collections import defaultdict
 
-import math
 import re
+from itertools import chain
+from collections import defaultdict
+from typing import List, Dict, Tuple, Any
+
+from lxml import etree
+from loguru import logger
+
+from .common import xml2tree, strip_xpath_index, get_all_class_types
 from ..orm.basicfields import *
 from ..orm.field import Optional
 from ..orm import Model
 
-from itertools import chain
 
-from .common import install_coloredlogs
-import logging
-
-
-install_coloredlogs()
 
 class XmlMapper(object):
     """
@@ -56,8 +53,7 @@ class XmlMapper(object):
                 parent_xpath, child_xpath = "/"+"/".join(splitted[:-1]), splitted[-1]
                 for parent in tree.xpath(parent_xpath):
                     if not self.is_valid_number(len(parent.xpath(child_xpath)), cls.__count__):
-                        raise RuntimeError(f"Model count constaint error: '{cls_name}' count is '{len(parent.xpath(child_xpath))}', expect: '{cls.__count__}'.")
-
+                        raise RuntimeError(f"File {parent.base}, line {parent.lineno}, model count constaint error: '{cls_name}' count is {len(parent.xpath(child_xpath))}, expect: {cls.__count__}.")
 
 
 
@@ -65,15 +61,15 @@ class XmlMapper(object):
         
         xcls = set([strip_xpath_index(p).replace('/', '.')[1:] for p in paths])
 
+        # check consistance of model class and xml elements types
         if len(xcls - icls.keys()) > 0:
-            raise RuntimeError(f"Xml element class is not defined in model: {xcls - icls.keys()}.")
+            raise RuntimeError(f"Xml element class {xcls - icls.keys()} is not defined in model.")
         elif len(icls.keys() - xcls) > 0:
-            logging.warning(f"Class defined in model is not found in xml: {icls.keys() - xcls}.")
+            logger.warning(f"Class {icls.keys() - xcls} defined in model is not found in xml")
 
         # build mapped object related model
         obj_map = defaultdict(lambda: None)
         
-        # build obj_map
         for e in root.iter(tag=etree.Element):
             elem = e
             path = tree.getpath(e)
@@ -88,7 +84,8 @@ class XmlMapper(object):
                     if type(field) == Optional:
                         field = field.field
                     if field is None:
-                        logging.warning(f"Try to assign extra attribute '{k}' to undefined field of '{cls_name}', drop it.")
+                        logger.warning(f"Try to assign extra attribute '{k}' to undefined field of '{cls_name}', drop it.")
+                        logger.warning(f"  - File {elem.base}, line {elem.lineno}")
                     elif type(field) == StringField:
                         assign_items[k] = v
                     elif type(field) == IntegerField:
@@ -96,13 +93,13 @@ class XmlMapper(object):
                     elif type(field) == FloatField:
                         assign_items[k] = float(v)
                     else:
-                        raise RuntimeError(f"Undefined field type: {field}")
+                        raise RuntimeError(f"Unknown field type '{field}'")
                 
                 if elem.text:
                     assign_items["text"] = elem.text.strip()
 
             except ValueError:
-                raise ValueError(f"Error type of field '{k}' of '{cls}' expect: {field}.")
+                raise ValueError(f"Error type of field '{k}' of '{cls}', got '{type(v)}', expect '{field}'.")
                     
 
             # create object of class
@@ -186,16 +183,16 @@ class XmlLinker(object):
         all_cls = chain.from_iterable( [ [ cls for cls in get_all_class_types(model_cls) ] for model_cls in model_cls_list ] )
         
         for cls in all_cls:
-            logging.info(f"Initializing class '{cls.__qualname__}'...")
+            logger.info(f"Initializing class '{cls.__qualname__}'...")
 
             for name, field in cls.getFields():
                 if type(field) not in [ ForeignKeyField, ForeignKeyArrayField ]:
                     continue
 
                 # initialize closure
-                logging.info(f"  Initialize field '{name}' finder.")
+                logger.info(f"  - field '{name}' finder.")
                 if field.finder is None:
-                    raise RuntimeError(f"ForeignKeyField '{cls.__qualname__}':'{name}' has no finder assigned.")
+                    raise RuntimeError(f"ForeignKeyField '{name}' of '{cls.__qualname__}' has no finder assigned.")
 
                 field.finder = field.finder(orm_list)
 
@@ -209,35 +206,23 @@ class XmlLinker(object):
                     filled = field.finder(model)
 
                     if filled == None:
-                        logging.warn(f"ForeignKeyField '{model.__class__.__qualname__}':'{name}' find nothing: '{model}'")
+                        logger.warning(f"ForeignKeyField '{name}' of '{model.__class__.__qualname__}' find nothing for '{model}'.")
 
-                    if type(filled).__qualname__ != field.column_type:
-                        raise ValueError(f"Field type error: '{model.__class__.__qualname__}':'{name}', got '{type(filled)}', expect '{field.column_type}'")
-                    
-                    # no error found and assign it
                     setattr(model, name, filled)
+                    
                 # array
                 elif type(field) == ForeignKeyArrayField:
                     filled = field.finder(model)
                     
                     if filled == None:
-                        logging.warn(f"ForeignKeyField '{model.__class__.__qualname__}':'{name}' find nothing: '{model}'")
+                        logger.warning(f"ForeignKeyField '{name}' of '{model.__class__.__qualname__}' find nothing for '{model}'")
                         filled = []
-                    elif type(filled) != list:
-                        raise ValueError(f"Field type error: '{model.__class__.__qualname__}':'{name}', got '{type(filled)}', expect 'Array({field.column_type})'")
-                    elif len(filled) == 0:
-                        logging.warn(f"ForeignKeyField '{model.__class__.__qualname__}':'{name}' find nothing: '{model}'")
 
-                    wrong_type = [ e for e in filled if type(e).__qualname__ != field.column_type ]
-
-                    if len(wrong_type) > 0:
-                        raise ValueError(f"Field type error: '{model.__class__.__qualname__}':'{name}', got '{wrong_type}', expect 'Array({field.column_type})'")
-
-                    # no error found and assign it
+                    if len(filled) == 0:
+                        logger.warning(f"ForeignKeyField '{name}' of '{model.__class__.__qualname__}' find nothing for '{model}'")
+                
                     setattr(model, name, filled)
-                # other type
-                else:
-                    pass
+
                 
 
                         

@@ -1,10 +1,7 @@
-from lxml import etree
 import re
-
-from typing import Type, List
 import inspect
-
-import logging
+from typing import Type, List
+from lxml import etree
 
 # ==========================================
 #   File Utilities
@@ -59,12 +56,3 @@ def get_all_class_types(cls: Type) -> List[Type]:
     inner_classes_list(cls, cls_list)
 
     return cls_list
-
-def install_coloredlogs(level='INFO'):
-    logger = logging.getLogger()
-    try:
-        import coloredlogs
-        coloredlogs.install(level=level, logger=logger)
-    except ImportError:
-        logging.info("xml-ormz: coloredlogs not installed using plain logging style.")
-    return logger
