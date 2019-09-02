@@ -4,6 +4,7 @@ import re
 from itertools import chain
 from collections import defaultdict
 from typing import List, Dict, Tuple, Any
+from urllib.parse import unquote 
 
 from lxml import etree
 from loguru import logger
@@ -53,7 +54,7 @@ class XmlMapper(object):
                 parent_xpath, child_xpath = "/"+"/".join(splitted[:-1]), splitted[-1]
                 for parent in tree.xpath(parent_xpath):
                     if not self.is_valid_number(len(parent.xpath(child_xpath)), cls.__count__):
-                        raise RuntimeError(f"File {parent.base}, line {parent.lineno}, model count constaint error: '{cls_name}' count is {len(parent.xpath(child_xpath))}, expect: {cls.__count__}.")
+                        raise RuntimeError(f"File {unquote(parent.base)}, line {parent.sourceline}, model count constaint error: '{cls_name}' count is {len(parent.xpath(child_xpath))}, expect: {cls.__count__}.")
 
 
 
@@ -85,7 +86,7 @@ class XmlMapper(object):
                         field = field.field
                     if field is None:
                         logger.warning(f"Try to assign extra attribute '{k}' to undefined field of '{cls_name}', drop it.")
-                        logger.warning(f"  - File {elem.base}, line {elem.lineno}")
+                        logger.warning(f"  - File {unquote(elem.base)}, line {elem.sourceline}")
                     elif type(field) == StringField:
                         assign_items[k] = v
                     elif type(field) == IntegerField:

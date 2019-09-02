@@ -4,7 +4,7 @@ with open("README.md", "r") as file:
     long_description = file.read()
 
 
-REQUIREMENTS = ["lxml"]
+REQUIREMENTS = ["lxml", "loguru"]
 
 CLASSIFIERS = [ 
     'Development Status :: 1 - Planning', 
@@ -18,7 +18,7 @@ CLASSIFIERS = [
 
 # calling the setup function  
 setup(name='xml-ormz', 
-      version='0.0.1', 
+      version='0.0.2', 
       description='xml-ormz database library mapping collections of xml into python model objects', 
       long_description=long_description, 
       long_description_content_type="text/markdown",
