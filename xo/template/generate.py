@@ -10,8 +10,8 @@ from typing import Union, Optional, List
 from collections import defaultdict
 
 from lxml import etree
-from xo.crawler.common import xml2tree, strip_xpath_index
-from xo.orm.basicfields import StringField, IntegerField, FloatField
+from ..crawler.common import xml2tree, strip_xpath_index
+from ..orm.basicfields import StringField, IntegerField, FloatField
 
 
 
@@ -78,7 +78,8 @@ def generate_pycode_from_xml(xmlfiles: List[str], out="model.py"):
 
 def generate_pycode(meta_class):
     from jinja2 import Template
-    with open("template", "r") as file:
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    with open(os.path.join(dir_path, "template"), "r") as file:
         template = Template( file.read() )
         text = template.render(meta_class=meta_class)
         return text

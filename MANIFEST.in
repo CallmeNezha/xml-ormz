@@ -1,0 +1,2 @@
+include xo/template/template
+include README.md
