@@ -165,6 +165,9 @@ class XmlMapper(object):
         Parameters:
             xpaths - xpaths starting from root
                        of all elements [ /A, /A/B[1], /A/B[1]/C ... ]
+        
+        Return:
+            dict { xpath: is_multiple:bool }
         """
         is_multiple = defaultdict(lambda: False)
         # split index numbers

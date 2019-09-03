@@ -18,7 +18,7 @@ CLASSIFIERS = [
 
 # calling the setup function  
 setup(name='xml-ormz', 
-      version='0.0.2', 
+      version='0.0.3', 
       description='xml-ormz database library mapping collections of xml into python model objects', 
       long_description=long_description, 
       long_description_content_type="text/markdown",
@@ -27,6 +27,9 @@ setup(name='xml-ormz',
       author_email='jiangzijian77@gmail.com', 
       license='MIT', 
       packages=find_packages(), 
+      entry_points = {
+        'console_scripts': ['xml-ormz=xo.template.generate:main'],
+      },
       classifiers=CLASSIFIERS, 
       install_requires=REQUIREMENTS, 
       keywords='xml orm database'
