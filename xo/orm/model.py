@@ -147,7 +147,7 @@ class Model(dict, metaclass=ModelMetaclass):
 
         field = self.getField(key)
         if type(field) == ForeignKeyField:
-            if value!= None and field.column_type != type(value).__qualname__:
+            if value!= None and type(value).__qualname__ not in field.column_type:
                 raise AttributeError(f"'{self.__class__.__qualname__}': Wrong attribute '{key}' type, got '{type(value).__qualname__}', expect '{field.column_type}'.")
 
         elif type(field) == ForeignKeyArrayField:
@@ -155,7 +155,7 @@ class Model(dict, metaclass=ModelMetaclass):
                 raise AttributeError(f"'{self.__class__.__qualname__}': Wrong attribute '{key}' type, got '{type(value).__qualname__}', expect 'List({field.column_type})'")
             
             else:
-                wrongs = [ v for v in value if type(v).__qualname__ != field.column_type ]
+                wrongs = [ v for v in value if type(v).__qualname__ not in field.column_type ]
                 if len( wrongs ) > 0:
                     raise AttributeError(f"'{self.__class__.__qualname__}': Wrong attribute '{key}' type, got '{wrongs}', expect 'List({field.column_type})'")
 

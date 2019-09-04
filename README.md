@@ -162,7 +162,7 @@ If you have noticed all our xml file has been parsed into python native objects 
 
 ```
 
-2. Create finders in `finder.py`
+2. ~~Create finders in `finder.py`~~
 
 ```python
 #finder.py
@@ -187,7 +187,7 @@ Contacts.Person.getField("apartment").finder = Finder
 
 
 
-3. Modify `hello.py` and see the result.
+3. ~~Modify `hello.py` and see the result.~~
 
 ```python
 # hello.py

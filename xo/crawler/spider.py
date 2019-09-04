@@ -197,17 +197,18 @@ class XmlLinker(object):
                 logger.info(f"  - field '{name}' finder.")
                 if field.finder is None:
                     raise RuntimeError(f"ForeignKeyField '{name}' of '{cls.__qualname__}' has no finder assigned.")
+                elif not callable(field.finder):
+                    raise RuntimeError(f"ForeignKeyField '{name}' of '{cls.__qualname__}' has finder is not callable.")
 
-                field.finder = field.finder(orm_list)
-
-
+    def set_env(self, env_vars):
+        self.env_vars = env_vars
 
     def link(self):
         models = chain.from_iterable( [ orm.values() for orm in self.orm_list ] )
         for model in models:
             for name, field in model.getFields():
                 if type(field) == ForeignKeyField:
-                    filled = field.finder(model)
+                    filled = field.finder(self.env_vars, model)
 
                     if filled == None:
                         logger.warning(f"ForeignKeyField '{name}' of '{model.__class__.__qualname__}' find nothing for '{model}'.")
@@ -216,11 +217,11 @@ class XmlLinker(object):
                     
                 # array
                 elif type(field) == ForeignKeyArrayField:
-                    filled = field.finder(model)
+                    filled = field.finder(self.env_vars, model)
                     
                     if filled == None:
                         logger.warning(f"ForeignKeyField '{name}' of '{model.__class__.__qualname__}' find nothing for '{model}'")
-                        filled = []
+                        filled = [ ]
 
                     if len(filled) == 0:
                         logger.warning(f"ForeignKeyField '{name}' of '{model.__class__.__qualname__}' find nothing for '{model}'")
