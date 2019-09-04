@@ -41,7 +41,7 @@ class XmlMapper(object):
         # Reverse `icls_parent` dictionary
         for child, parent in icls_parent.items():
             icls_children[parent].append(child)
-        #!for        
+        #endfor
 
         # check number of children count constraints
         for cls_name, cls in icls.items():
@@ -69,7 +69,7 @@ class XmlMapper(object):
             logger.warning(f"Class {icls.keys() - xcls} defined in model is not found in xml")
 
         # build mapped object related model
-        obj_map = defaultdict(lambda: None)
+        obj_map = dict( )
         
         for e in root.iter(tag=etree.Element):
             elem = e
@@ -158,24 +158,24 @@ class XmlMapper(object):
 
 
 
-    def paths_meta(self, xpaths:List[str]):
-        """
-        Get path meta information of all xpaths in one xml.
+    # def paths_meta(self, xpaths:List[str]):
+    #     """
+    #     Get path meta information of all xpaths in one xml.
 
-        Parameters:
-            xpaths - xpaths starting from root
-                       of all elements [ /A, /A/B[1], /A/B[1]/C ... ]
+    #     Parameters:
+    #         xpaths - xpaths starting from root
+    #                    of all elements [ /A, /A/B[1], /A/B[1]/C ... ]
         
-        Return:
-            dict { xpath: is_multiple:bool }
-        """
-        is_multiple = defaultdict(lambda: False)
-        # split index numbers
-        prog = re.compile('.+\[(\d+)\]$')
-        for x in xpaths:
-            is_multiple[ strip_xpath_index(x) ] |= prog.match(x) is not None
-        #endfor
-        return is_multiple
+    #     Return:
+    #         dict { xpath: is_multiple:bool }
+    #     """
+    #     is_multiple = defaultdict(lambda: False)
+    #     # split index numbers
+    #     prog = re.compile('.+\[(\d+)\]$')
+    #     for x in xpaths:
+    #         is_multiple[ strip_xpath_index(x) ] |= prog.match(x) is not None
+    #     #endfor
+    #     return is_multiple
 
 
 class XmlLinker(object):
