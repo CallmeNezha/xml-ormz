@@ -2,14 +2,14 @@ from .field import Field
 
 
 import re
-from typing import Optional, List
+from typing import Union, List
 
 
 class ForeignKeyField(object):
     """
     Foreign Key Field
     """
-    def __init__(self, cls:Optional[str, List[str]], name=None, *, finder=None):
+    def __init__(self, cls:Union[str, List[str]], name=None, *, finder=None):
         self.name = name
         self.column_type = cls
         self.finder = finder
