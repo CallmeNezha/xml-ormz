@@ -131,6 +131,14 @@ class Model(dict, metaclass=ModelMetaclass):
     def getFields(cls):
         return cls.__mappings__.items()
 
+    @classmethod
+    def getClassName(cls):
+        return cls.__name__
+
+    @classmethod
+    def getClassQualName(cls):
+        return cls.__qualname__
+
     def __str__(self):
         return f"<class {self.__class__.__qualname__}>: {dict(self.items())}"
     
