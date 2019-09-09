@@ -113,9 +113,14 @@ def get_meta_class(files: List[str]):
             
             cls_attributes[ cls_name ] |= set( elem.keys() )
 
-            for key in cls_attributes[ cls_name ]:
-                attr = elem.get(key)
-                cls_attributes_types[ cls_name ][ key ].match(attr)
+            if len( cls_attributes[ cls_name ] ) == 0:
+                cls_attributes_types[ cls_name ] = defaultdict( lambda: GenericFieldMatcher() )
+            else:
+                for key in cls_attributes[ cls_name ]:
+                    attr = elem.get(key)
+                    cls_attributes_types[ cls_name ][ key ].match(attr)
+            
+                
         
     if len(root_tag) != 1:
         raise RuntimeError(f"Different root type of xml files {files}.")
