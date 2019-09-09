@@ -34,14 +34,7 @@ class XmlMapper(object):
         # get class types
         model_cls = self.model_cls
         icls = {cls.__qualname__ : cls for cls in get_all_class_types(model_cls) }
-        icls_parent = {cls : ".".join(cls.split(".")[:-1]) for cls in icls.keys() if len(cls.split(".")) > 1}
-        
 
-        icls_children = defaultdict(lambda: [ ])
-        # Reverse `icls_parent` dictionary
-        for child, parent in icls_parent.items():
-            icls_children[parent].append(child)
-        #endfor
 
         # check number of children count constraints
         for cls_name, cls in icls.items():
@@ -107,17 +100,6 @@ class XmlMapper(object):
             obj = cls(**assign_items)
             obj_map[path] = obj
 
-            # set parentXX and childXX attributes
-            if icls_parent.get(cls_name):
-                parent_name = icls[icls_parent[cls_name]].__name__
-                setattr(obj, f"parent{parent_name}", None)
-
-            if icls_children.get(cls_name):
-                for child_cls_name in icls_children[cls_name]:
-                    child_name = icls[child_cls_name].__name__
-                    setattr(obj, f"child{child_name}", [ ])
-                #endfor
-            #endif
 
             # Append it to parent object and set its parent
             parent_elem = elem.getparent()
@@ -126,25 +108,11 @@ class XmlMapper(object):
             else:
                 # has parent
                 parent = obj_map[tree.getpath(parent_elem)]
-                self.set_parent(obj, parent)
-                self.set_child(parent, obj)
+                parent.appendChild(obj)
 
 
-           
-
-            
         #endfor
         return obj_map
-
-    @staticmethod
-    def set_child(parent: Model, child: Model):
-        child_name = f"child{child.__class__.__name__}"
-        getattr(parent, child_name).append( child )
-
-    @staticmethod
-    def set_parent(child: Model, parent: Model):
-        parent_name = f"parent{parent.__class__.__name__}"
-        setattr(child, parent_name, parent)
 
     
     @staticmethod

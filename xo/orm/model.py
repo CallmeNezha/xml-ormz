@@ -1,11 +1,16 @@
 import sys
+import inspect
 import functools
+
+import typing
+from typing import Union, Type, List
 
 from loguru import logger
 
 from .field import Field, Optional
 from .basicfields import ForeignKeyField, ForeignKeyArrayField
 
+from .convert import toElement
 
 
 class ModelMetaclass(type):
@@ -18,6 +23,7 @@ class ModelMetaclass(type):
         tableName = attrs.get('__table__', None) or name
         logger.info('found model: %s (table: %s)' % (name, tableName))
         mappings = dict()
+        childclasses = [ ]
         fields = []
         primaryKey = None
         for k, v in attrs.items():
@@ -42,6 +48,13 @@ class ModelMetaclass(type):
                 logger.info('  found mapping: %s ==> %s' % (k, v))
                 mappings[k] = v
                 fields.append(f"ForeignKeyArrayField({k})")
+
+            elif inspect.isclass(v):
+                # child classes
+                logger.info('  found childclass: %s' % v)
+                childclasses.append(v)
+
+
             #endif
         if not primaryKey:
             #TODO: @nezha add default counting primary key
@@ -49,11 +62,12 @@ class ModelMetaclass(type):
             # raise RuntimeError('Primary key not found.')
         for k in mappings.keys():
             attrs.pop(k)
-        escaped_fields = list(map(lambda f: '`%s`' % f, fields))
+
         attrs['__mappings__'] = mappings 
         attrs['__table__'] = tableName
         attrs['__primary_key__'] = primaryKey
         attrs['__fields__'] = fields
+        attrs['__childclasses__'] = childclasses
 
         # set count constraints
         if '__count__' in attrs:
@@ -71,7 +85,7 @@ class ModelMetaclass(type):
                 raise ValueError("'__count__' attribute of model only expect integer > 0 or tuple of integer")
         else:
             attrs['__count__'] = (0, sys.maxsize)
-                
+
 
         return type.__new__(cls, name, bases, attrs)
 
@@ -118,10 +132,59 @@ class Model(dict, metaclass=ModelMetaclass):
 
         remains = kw.keys() - ( set(self.__mappings__.keys()).union( { 'text' } ) )
         if len(remains) > 0:
-            logger.warninging(f"'{qualname}': Assigning undefined attributes: '{remains}'.")
+            logger.warning(f"'{qualname}': Assigning undefined attributes: '{remains}'.")
+
+
 
         super(Model, self).__init__(**kw)
-       
+
+        #--------- assign parent{Class}, child{Class} attributes ---------#
+
+        qualname_splits = qualname.split(".")
+        if len(qualname_splits) > 1:
+            # have parent
+            parent_classname = qualname_splits[-2]
+            setattr(self, f'parent{parent_classname}', None) # place holder
+        else:
+            #root and not assign parent{Class} attribute
+            pass
+        
+        for childclass in self.__class__.__childclasses__:
+            setattr(self, f'child{childclass.getClassName()}', [ ])
+
+        #--------- ! assign parent{Class}, child{Class} attributes ---------#
+
+    @classmethod
+    def getParentClassName(cls) -> typing.Optional[str]:
+        parentclass_qualname = cls.getParentClassQualName()
+        if parentclass_qualname:
+            # return parent class name
+            return parentclass_qualname.split(".")[-1]
+        else:
+            # not having parent
+            return None
+
+    @classmethod
+    def getParentClassQualName(cls) -> typing.Optional[str]:
+        qualname = cls.getClassQualName()
+        qualname_split = qualname.split(".")
+        if len( qualname_split ) > 1:
+            # return parent name
+            return ".".join(qualname_split[:-1])
+        else:
+            # not having parent
+            return None
+
+    @classmethod
+    def getChildClasses(cls) -> List[type]:
+        return cls.__childclasses__
+
+    @classmethod
+    def isChildClass(cls, child:type):
+        if inspect.isclass(child):
+            return child in cls.getChildClasses()
+        else:
+            raise ValueError(f'Invalid "child" parameter for classmethod isChildClass(): "{child}"')
 
     @classmethod
     def getField(cls, key):
@@ -149,7 +212,7 @@ class Model(dict, metaclass=ModelMetaclass):
         try:
             return self[key]
         except KeyError:
-            raise AttributeError(r"'Model' object has no attribute '%s'" % key)
+            raise AttributeError(f"'{self.getClassQualName()}' object has no attribute '{key}'")
 
     def __setattr__(self, key, value):
 
@@ -169,10 +232,13 @@ class Model(dict, metaclass=ModelMetaclass):
 
         self[key] = value
 
-    def getValue(self, key):
+    def getAttr(self, key):
         return getattr(self, key, None)
 
-    def getValueOrDefault(self, key):
+    def setAttr(self, key, value):
+        setattr(self, key, value)
+
+    def getAttrOrDefault(self, key):
         value = getattr(self, key, None)
         if value is None:
             field = self.__mappings__[key]
@@ -182,3 +248,40 @@ class Model(dict, metaclass=ModelMetaclass):
                 setattr(self, key, value)
         return value
 
+    def setParent(self, parent:'Model'):
+        if not parent.isChildClass(self.__class__):
+            raise RuntimeError(f'Can\'t assign parent of wrong type, "{self.getClassQualName()}" is not childclass of "{parent.getClassQualName()}"')
+
+        self.removeFromParent()
+        setattr(self, f'parent{self.getParentClassName()}', parent)
+        getattr(parent, f'child{self.getClassName()}').append(self)
+        
+        
+    def removeFromParent(self):
+        parent_classname = self.getParentClassName()
+        if parent_classname is None:
+            raise RuntimeError(f'root class "{self.getClassQualName()}" has no parent.')
+
+        if getattr(self, f'parent{parent_classname}') is not None:
+            parent_obj = getattr(self, f'parent{parent_classname}')
+            getattr(parent_obj, f'child{self.getClassName()}').remove(self)
+            setattr(self, f'parent{parent_classname}', None)
+        else:
+            #TODO: Should we warning here?
+            pass
+
+    
+    def appendChild(self, child:'Model'):
+        if not self.isChildClass(child.__class__):
+            raise RuntimeError(f'Can\'t append child of wrong type, "{self.getClassQualName()}" is not childclass of "{parent.getClassQualName()}"')
+
+        child.setParent(self)
+
+
+    def toElement(self):
+        """
+        convert object into etree.Element
+        """
+        return toElement(self)
+    
+        
