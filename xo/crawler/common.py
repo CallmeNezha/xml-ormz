@@ -56,3 +56,33 @@ def get_all_class_types(cls: Type) -> List[Type]:
     inner_classes_list(cls, cls_list)
 
     return cls_list
+
+def read_xml_without_namespace(xml_file: str) -> etree._Element:
+    '''
+    This function receive a xml file and return an etree of this xml without any namespace related symbols.
+    Eg: 
+        {http://www.omg.org/XMI}version -> version
+        conf:Conf -> Conf
+    '''
+    # remove annotation in the origin xml #
+    parser = etree.XMLParser(remove_comments=True)
+    tree = etree.parse(xml_file, parser)
+    root = tree.getroot()
+
+    # check if the element in the xml has namespace#
+    for elem in root.getiterator():
+        i = elem.tag.find('}')
+        if i >= 0:
+            elem.tag = elem.tag[i+1:]
+            for attribute in elem.attrib:
+                j = attribute.find('}')
+                if j >= 0:
+                    value = elem.attrib[attribute]
+                    del elem.attrib[attribute]
+                    elem.attrib[attribute[j+1:]] = value
+    objectify.deannotate(root, cleanup_namespaces=True)
+
+    if not etree.iselement(root):
+        raise Exception("error")
+
+    return tree
