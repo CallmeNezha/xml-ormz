@@ -273,7 +273,7 @@ class Model(dict, metaclass=ModelMetaclass):
     
     def appendChild(self, child:'Model'):
         if not self.isChildClass(child.__class__):
-            raise RuntimeError(f'Can\'t append child of wrong type, "{self.getClassQualName()}" is not childclass of "{parent.getClassQualName()}"')
+            raise RuntimeError(f'Can\'t append child of wrong type, "{child.getClassQualName()}" is not childclass of "{self.getClassQualName()}"')
 
         child.setParent(self)
 
