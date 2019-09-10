@@ -7,11 +7,10 @@ from typing import List, Dict, Tuple, Any
 from urllib.parse import unquote 
 
 from lxml import etree
-from loguru import logger
+from .. import logger
 
-from .common import xml2tree, strip_xpath_index, get_all_class_types
-from ..orm.basicfields import *
-from ..orm.field import Optional
+from .common import strip_xpath_index, get_all_class_types, read_xml_without_namespace
+from ..orm.field import Field, Optional, FloatField, StringField, IntegerField, ForeignKeyField, ForeignKeyArrayField
 from ..orm import Model
 
 
@@ -22,7 +21,7 @@ class XmlMapper(object):
     """
     def __init__(self, xml, model_cls):
         self.xml = xml
-        self.tree = xml2tree(xml)
+        self.tree = read_xml_without_namespace(xml)
         self.model_cls = model_cls
 
     def parse(self):
@@ -199,6 +198,5 @@ class XmlLinker(object):
                 
 
                         
-        
 
     

@@ -2,71 +2,70 @@ import sys
 import inspect
 import functools
 from itertools import chain
+from abc import ABC
 
 import typing
 from typing import Union, Type, List, Tuple
 
-from loguru import logger
+from .. import logger
 
-from .field import Field, Optional
-from .basicfields import ForeignKeyField, ForeignKeyArrayField
+from .field import Field, Optional, ForeignKeyField, ForeignKeyArrayField
 
 from .convert import toElement
 
 
-class ModelMetaclass(type):
+class Builtin:
+    """ Builtin
     """
-    Meta Class
+    def __init__(self, *, description="builtin"):
+        self.description = description
+
+
+
+class ModelMetaclass(type):
+    """ Meta Class for model
     """
     def __new__(cls, name, bases, attrs):
+
         if name=='Model':
             return type.__new__(cls, name, bases, attrs)
-        tableName = attrs.get('__table__', None) or name
-        logger.info('found model: %s (table: %s)' % (name, tableName))
-        mappings = dict()
+
+        logger.debug( f'found model: {name}' )
+
+        fields = [ ]
         childclasses = [ ]
-        fields = []
-        primaryKey = None
+        mappings = dict()
+
+        # mappings
         for k, v in attrs.items():
             if isinstance(v, Field):
-                logger.info('  found mapping: %s ==> %s' % (k, v))
+                logger.debug('  found mapping: %s ==> %s' % (k, v))
                 mappings[k] = v
-                if v.primary_key:
-                    if primaryKey:
-                        raise RuntimeError("Duplicate primary key for field: '%s'" % k)
-                    primaryKey = k
-                else:
-                    fields.append(k)
+                fields.append(k)
+
             elif isinstance(v, Optional):
-                logger.info('  found mapping: %s ==> %s' % (k, v))
+                logger.debug('  found mapping: %s ==> %s' % (k, v))
                 mappings[k] = v
                 fields.append(f"Optional({k})")
             elif isinstance(v, ForeignKeyField):
-                logger.info('  found mapping: %s ==> %s' % (k, v))
+                logger.debug('  found mapping: %s ==> %s' % (k, v))
                 mappings[k] = v
                 fields.append(f"ForeignKeyField({k})")
             elif isinstance(v, ForeignKeyArrayField):
-                logger.info('  found mapping: %s ==> %s' % (k, v))
+                logger.debug('  found mapping: %s ==> %s' % (k, v))
                 mappings[k] = v
                 fields.append(f"ForeignKeyArrayField({k})")
 
             elif inspect.isclass(v):
                 # child classes
-                logger.info('  found childclass: %s' % v)
+                logger.debug('  found childclass: %s' % v)
                 childclasses.append(v)
-
-
             #endif
-        if not primaryKey:
-            #TODO: @nezha add default counting primary key
-            pass
-            # raise RuntimeError('Primary key not found.')
+
         for k in mappings.keys():
             attrs.pop(k)
 
         attrs['__mappings__'] = mappings 
-        attrs['__table__'] = tableName
-        attrs['__primary_key__'] = primaryKey
         attrs['__fields__'] = fields
         attrs['__childclasses__'] = childclasses
 
@@ -91,30 +90,39 @@ class ModelMetaclass(type):
         return type.__new__(cls, name, bases, attrs)
 
 
-class Model(dict, metaclass=ModelMetaclass):
+
+class Model(dict, ABC, metaclass=ModelMetaclass):
     """
     Model Class
     """
-    def __init__(self, **kw):
+    def __init__(self, **kwargs):
 
         qualname = self.__class__.__qualname__
+
         # Check attributes are valid
         for k, v in self.__mappings__.items():
 
             # Filed type or Optional(Field) type including:
             # StringField ; IntegerField ; FloatField
-            if isinstance(v, Field) or type(v) == Optional:
+            if isinstance(v, Field):
+
                 isOptional = type(v) == Optional
-                if k not in kw and not isOptional:
+
+                if k not in kwargs and not isOptional:
                     raise AttributeError(f"'{qualname}': Missing required attribute: '{k}'")
-                if k not in kw and isOptional:
+
+                if k not in kwargs and isOptional:
                     pass
-                elif type(kw[k]) == type(None) and isOptional:
+
+                elif type(kwargs[k]) == type(None) and isOptional:
                     pass
-                elif type(kw[k]) != v.column_type:
-                    raise AttributeError(f"'{qualname}': Wrong attribute '{k}' type, expect: '{v.column_type.__name__}', got: '{type(kw[k])}'")
-                elif v.is_valid(kw[k]) == False:
-                    raise AttributeError(f"'{qualname}': Attribute error, failed at attribute '{k}' constraint '{v.r}', got: '{kw[k]}'")
+
+                elif type(kwargs[k]) != v.column_type:
+                    raise AttributeError(f"'{qualname}': Wrong attribute '{k}' type, expect: '{v.column_type.__name__}', got: '{type(kwargs[k])}'")
+
+                elif v.is_valid(kwargs[k]) == False:
+                    raise AttributeError(f"'{qualname}': Attribute error, failed at attribute '{k}' constraint '{v.r}', got: '{kwargs[k]}'")
+
             
             # ForeignKeyField ;
             elif type(v) == ForeignKeyField:
@@ -131,29 +139,31 @@ class Model(dict, metaclass=ModelMetaclass):
                 pass
         #!for 
 
-        remains = kw.keys() - ( set(self.__mappings__.keys()).union( { 'text' } ) )
+        remains = kwargs.keys() - ( set(self.__mappings__.keys()).union( { 'text' } ) )
+
         if len(remains) > 0:
             logger.warning(f"'{qualname}': Assigning undefined attributes: '{remains}'.")
 
 
 
-        super(Model, self).__init__(**kw)
+        super(Model, self).__init__(**kwargs)
 
-        #--------- assign parent{Class}, child{Class} attributes ---------#
+        #--------- assign __parent{Class}, __child{Class} attributes ---------#
 
         qualname_splits = qualname.split(".")
+
         if len(qualname_splits) > 1:
             # have parent
             parent_classname = qualname_splits[-2]
-            setattr(self, f'parent{parent_classname}', None) # place holder
+            setattr(self, f'__parent{parent_classname}', None) # place holder
         else:
-            #root and not assign parent{Class} attribute
+            #root and not assign __parent{Class} attribute
             pass
         
         for childclass in self.__class__.__childclasses__:
-            setattr(self, f'child{childclass.getClassName()}', [ ])
+            setattr(self, f'__child{childclass.getClassName()}', [ ])
 
-        #--------- ! assign parent{Class}, child{Class} attributes ---------#
+        #--------- ! assign __parent{Class}, __child{Class} attributes ---------#
 
     @classmethod
     def getParentClassName(cls) -> typing.Optional[str]:
@@ -181,7 +191,7 @@ class Model(dict, metaclass=ModelMetaclass):
         return tuple( cls.__childclasses__ )
 
     @classmethod
-    def isChildClass(cls, child:type):
+    def isChildClass(cls, child:type) -> bool:
         if inspect.isclass(child):
             return child in cls.getChildClasses()
         else:
@@ -217,7 +227,9 @@ class Model(dict, metaclass=ModelMetaclass):
 
     def __setattr__(self, key, value):
 
+        # check 
         field = self.getField(key)
+
         if type(field) == ForeignKeyField:
             if value!= None and type(value).__qualname__ not in field.column_type:
                 raise AttributeError(f"'{self.__class__.__qualname__}': Wrong attribute '{key}' type, got '{type(value).__qualname__}', expect '{field.column_type}'.")
@@ -230,6 +242,15 @@ class Model(dict, metaclass=ModelMetaclass):
                 wrongs = [ v for v in value if type(v).__qualname__ not in field.column_type ]
                 if len( wrongs ) > 0:
                     raise AttributeError(f"'{self.__class__.__qualname__}': Wrong attribute '{key}' type, got '{wrongs}', expect 'List({field.column_type})'")
+
+        elif isinstance(field, Field):
+            if type(value) is not field.column_type:
+                raise AttributeError(f"'{self.__class__.__qualname__}': Wrong attribute '{key}' type, got '{type(value)}', expect '{field.column_type}'.")
+
+        elif type(field) is Builtin:
+            logger.error(f"'{self.__class__.__qualname__}': Don't mess with builtin variable {key} if you are a enthusiastic hacker.")
+        else:
+            logger.warning(f"'{self.__class__.__qualname__}': Assign extra attribute '{key}' to object. Please notice.")
 
         self[key] = value
 
@@ -253,15 +274,15 @@ class Model(dict, metaclass=ModelMetaclass):
         if self.getParentClassName() is None:
             return None
         else:
-            getattr(self, f'parent{self.getParentClassName()}')
+            getattr(self, f'__parent{self.getParentClassName()}')
 
     def setParent(self, parent:'Model'):
         if not parent.isChildClass(self.__class__):
             raise RuntimeError(f'Can\'t assign parent of wrong type, "{self.getClassQualName()}" is not childclass of "{parent.getClassQualName()}"')
 
         self.removeFromParent()
-        setattr(self, f'parent{self.getParentClassName()}', parent)
-        getattr(parent, f'child{self.getClassName()}').append(self)
+        setattr(self, f'__parent{self.getParentClassName()}', parent)
+        getattr(parent, f'__child{self.getClassName()}').append(self)
         
         
     def removeFromParent(self):
@@ -269,10 +290,10 @@ class Model(dict, metaclass=ModelMetaclass):
         if parent_classname is None:
             raise RuntimeError(f'root class "{self.getClassQualName()}" has no parent.')
 
-        if getattr(self, f'parent{parent_classname}') is not None:
-            parent_obj = getattr(self, f'parent{parent_classname}')
-            getattr(parent_obj, f'child{self.getClassName()}').remove(self)
-            setattr(self, f'parent{parent_classname}', None)
+        if getattr(self, f'__parent{parent_classname}') is not None:
+            parent_obj = getattr(self, f'__parent{parent_classname}')
+            getattr(parent_obj, f'__child{self.getClassName()}').remove(self)
+            setattr(self, f'__parent{parent_classname}', None)
         else:
             #TODO: Should we warning here?
             pass
@@ -286,7 +307,7 @@ class Model(dict, metaclass=ModelMetaclass):
 
 
     def getChildren(self):
-        return chain.from_iterable( [ getattr(self, f'child{childcls.getClassName()}') for childcls in self.getChildClasses() ] )
+        return chain.from_iterable( [ getattr(self, f'__child{childcls.getClassName()}') for childcls in self.getChildClasses() ] )
 
 
     def toElement(self):

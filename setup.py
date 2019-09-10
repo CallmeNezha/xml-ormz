@@ -4,7 +4,7 @@ with open("README.md", "r") as file:
     long_description = file.read()
 
 
-REQUIREMENTS = ["lxml", "loguru"]
+REQUIREMENTS = ["lxml", "loguru", "jinja2"]
 
 CLASSIFIERS = [ 
     'Development Status :: 1 - Planning', 

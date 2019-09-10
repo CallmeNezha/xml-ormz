@@ -10,8 +10,8 @@ from typing import Union, Optional, List
 from collections import defaultdict
 
 from lxml import etree
-from ..crawler.common import xml2tree, strip_xpath_index
-from ..orm.basicfields import StringField, IntegerField, FloatField
+from ..crawler.common import strip_xpath_index, read_xml_without_namespace
+from ..orm.field import StringField, IntegerField, FloatField
 
 
 
@@ -95,7 +95,7 @@ def get_meta_class(files: List[str]):
     root_tag = set( )
 
     for fpath in files:
-        tree = xml2tree(fpath)
+        tree = read_xml_without_namespace(fpath)
         root = tree.getroot()
         root_tag.add( root.tag )
     

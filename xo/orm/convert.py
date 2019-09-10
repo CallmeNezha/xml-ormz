@@ -1,6 +1,6 @@
 
 from lxml import etree
-from .basicfields import StringField, FloatField, IntegerField
+from .field import StringField, FloatField, IntegerField
 from .field import Optional
 
 def toElement(model):
@@ -14,7 +14,7 @@ def toElement(model):
             elem.set( k, str ( model.getAttr( k ) ) ) 
     
     for childcls in model.getChildClasses():
-        for child in getattr(model, f'child{childcls.getClassName()}'):
+        for child in getattr(model, f'__child{childcls.getClassName()}'):
             elem.append( toElement(child) )
 
     return elem
