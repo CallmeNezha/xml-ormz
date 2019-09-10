@@ -1,9 +1,10 @@
 import sys
 import inspect
 import functools
+from itertools import chain
 
 import typing
-from typing import Union, Type, List
+from typing import Union, Type, List, Tuple
 
 from loguru import logger
 
@@ -176,8 +177,8 @@ class Model(dict, metaclass=ModelMetaclass):
             return None
 
     @classmethod
-    def getChildClasses(cls) -> List[type]:
-        return cls.__childclasses__
+    def getChildClasses(cls) -> Tuple[type]:
+        return tuple( cls.__childclasses__ )
 
     @classmethod
     def isChildClass(cls, child:type):
@@ -248,6 +249,12 @@ class Model(dict, metaclass=ModelMetaclass):
                 setattr(self, key, value)
         return value
 
+    def getParent(self):
+        if self.getParentClassName() is None:
+            return None
+        else:
+            getattr(self, f'parent{self.getParentClassName()}')
+
     def setParent(self, parent:'Model'):
         if not parent.isChildClass(self.__class__):
             raise RuntimeError(f'Can\'t assign parent of wrong type, "{self.getClassQualName()}" is not childclass of "{parent.getClassQualName()}"')
@@ -276,6 +283,10 @@ class Model(dict, metaclass=ModelMetaclass):
             raise RuntimeError(f'Can\'t append child of wrong type, "{child.getClassQualName()}" is not childclass of "{self.getClassQualName()}"')
 
         child.setParent(self)
+
+
+    def getChildren(self):
+        return chain.from_iterable( [ getattr(self, f'child{childcls.getClassName()}') for childcls in self.getChildClasses() ] )
 
 
     def toElement(self):
