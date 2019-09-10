@@ -4,20 +4,11 @@ import functools
 from itertools import chain
 
 import typing
-from typing import Union, Type, List
+from typing import Union, Type, List, Tuple
 
 from .. import logger
-
 from .field import Field, Optional, ForeignKeyField, ForeignKeyArrayField
-
 from .convert import toElement
-
-
-class Builtin:
-    """ Builtin
-    """
-    def __init__(self, *, description="builtin"):
-        self.description = description
 
 
 
@@ -212,6 +203,15 @@ class Model(dict, metaclass=ModelMetaclass):
     def getClassQualName(cls):
         return cls.__qualname__
 
+    @staticmethod
+    def is_valid_number(num: int, count: Tuple[int,int]) -> bool:
+        if type(count) == int:
+            return num == count
+        elif type(count) == tuple:
+            return count[0] <= num <= count[1]
+        else:
+            raise RuntimeError("Probably a bug here. Please contact developer.")
+
     def __str__(self):
         return f"<class {self.__class__.__qualname__}>: {dict(self.items())}"
     
@@ -246,10 +246,9 @@ class Model(dict, metaclass=ModelMetaclass):
             if type(value) is not field.column_type:
                 raise AttributeError(f"'{self.__class__.__qualname__}': Wrong attribute '{key}' type, got '{type(value)}', expect '{field.column_type}'.")
 
-        elif type(field) is Builtin:
-            logger.error(f"'{self.__class__.__qualname__}': Don't mess with builtin variable {key} if you are a enthusiastic hacker.")
         else:
-            logger.warning(f"'{self.__class__.__qualname__}': Assign extra attribute '{key}' to object. Please notice.")
+            # logger.warning(f"'{self.__class__.__qualname__}': Assign extra attribute '{key}' to object. Please notice.")
+            pass
 
         self[key] = value
 
@@ -282,6 +281,10 @@ class Model(dict, metaclass=ModelMetaclass):
         self.removeFromParent()
         setattr(self, f'__parent{self.getParentClassName()}', parent)
         getattr(parent, f'__child{self.getClassName()}').append(self)
+
+        if not self.is_valid_number( len( getattr(parent, f'__child{self.getClassName()}') ), self.__count__  ):
+            raise RuntimeError(f'Can\'t append child, model count exceeding constaint "{self.getClassQualName()}" count expect {self.__class__.__count__}.')
+
         
         
     def removeFromParent(self):

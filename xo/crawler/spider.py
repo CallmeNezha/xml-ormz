@@ -115,7 +115,7 @@ class XmlMapper(object):
 
     
     @staticmethod
-    def is_valid_number(num: int, count) -> bool:
+    def is_valid_number(num: int, count: Tuple[int,int]) -> bool:
         if type(count) == int:
             return num == count
         elif type(count) == tuple:
