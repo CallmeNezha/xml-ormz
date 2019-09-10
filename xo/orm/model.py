@@ -2,10 +2,9 @@ import sys
 import inspect
 import functools
 from itertools import chain
-from abc import ABC
 
 import typing
-from typing import Union, Type, List, Tuple
+from typing import Union, Type, List
 
 from .. import logger
 
@@ -91,7 +90,7 @@ class ModelMetaclass(type):
 
 
 
-class Model(dict, ABC, metaclass=ModelMetaclass):
+class Model(dict, metaclass=ModelMetaclass):
     """
     Model Class
     """
@@ -187,8 +186,8 @@ class Model(dict, ABC, metaclass=ModelMetaclass):
             return None
 
     @classmethod
-    def getChildClasses(cls) -> Tuple[type]:
-        return tuple( cls.__childclasses__ )
+    def getChildClasses(cls) -> List[type]:
+        return cls.__childclasses__ [:]
 
     @classmethod
     def isChildClass(cls, child:type) -> bool:
@@ -202,7 +201,7 @@ class Model(dict, ABC, metaclass=ModelMetaclass):
         return cls.__mappings__.get(key, None)
 
     @classmethod
-    def getFields(cls):
+    def getFieldItems(cls):
         return cls.__mappings__.items()
 
     @classmethod
@@ -306,9 +305,22 @@ class Model(dict, ABC, metaclass=ModelMetaclass):
         child.setParent(self)
 
 
-    def getChildren(self):
+    def getChildrenIter(self):
         return chain.from_iterable( [ getattr(self, f'__child{childcls.getClassName()}') for childcls in self.getChildClasses() ] )
 
+    def getChildren(self):
+        return list( self.getChildrenIter() )
+    
+    def removeChild(self, child:'Model'):
+        if child.getParent() != self:
+            raise RuntimeError(f'Can\'t remove object which is not child of this parent')
+        
+        child.removeFromParent()
+
+    def removeChildren(self):
+        for child in self.getChildren():
+            child.removeFromParent()
+        #endfor
 
     def toElement(self):
         """

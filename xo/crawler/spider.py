@@ -154,14 +154,14 @@ class XmlLinker(object):
         all_cls = chain.from_iterable( [ [ cls for cls in get_all_class_types(model_cls) ] for model_cls in model_cls_list ] )
         
         for cls in all_cls:
-            logger.info(f"Initializing class '{cls.__qualname__}'...")
+            logger.debug(f"Initializing class '{cls.__qualname__}'...")
 
-            for name, field in cls.getFields():
+            for name, field in cls.getFieldItems():
                 if type(field) not in [ ForeignKeyField, ForeignKeyArrayField ]:
                     continue
 
-                # initialize closure
-                logger.info(f"  - field '{name}' finder.")
+                # initialize
+                logger.debug(f"  - field '{name}' finder.")
                 if field.finder is None:
                     raise RuntimeError(f"ForeignKeyField '{name}' of '{cls.__qualname__}' has no finder assigned.")
                 elif not callable(field.finder):
@@ -173,7 +173,7 @@ class XmlLinker(object):
     def link(self):
         models = chain.from_iterable( [ orm.values() for orm in self.orm_list ] )
         for model in models:
-            for name, field in model.getFields():
+            for name, field in model.getFieldItems():
                 if type(field) == ForeignKeyField:
                     filled = field.finder(self.env_vars, model)
 
