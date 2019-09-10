@@ -56,9 +56,9 @@ class XmlMapper(object):
 
         # check consistance of model class and xml elements types
         if len(xcls - icls.keys()) > 0:
-            raise RuntimeError(f"Xml element class {xcls - icls.keys()} is not defined in model.")
+            raise RuntimeError(f"{unquote(root.base)}, xml element class {xcls - icls.keys()} is not defined in model.")
         elif len(icls.keys() - xcls) > 0:
-            logger.warning(f"Class {icls.keys() - xcls} defined in model is not found in xml")
+            logger.debug(f"{unquote(root.base)}, class {icls.keys() - xcls} defined in model is not found in xml")
 
         # build mapped object related model
         obj_map = dict( )
