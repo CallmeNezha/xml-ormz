@@ -9,7 +9,7 @@ def toElement(model):
     Hope it never meets stack overflow...
     """
     elem = etree.Element(model.getClassName())
-    for k, v in model.getFields():
+    for k, v in model.getFieldItems():
         if type( v ) in [StringField, FloatField, IntegerField, Optional] and model.getAttr(k) is not None:
             elem.set( k, str ( model.getAttr( k ) ) ) 
     

@@ -18,7 +18,7 @@ CLASSIFIERS = [
 
 # calling the setup function  
 setup(name='xml-ormz', 
-      version='0.0.8', 
+      version='0.0.9', 
       description='xml-ormz database library mapping collections of xml into python model objects', 
       long_description=long_description, 
       long_description_content_type="text/markdown",

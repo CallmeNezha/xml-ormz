@@ -56,9 +56,9 @@ class XmlMapper(object):
 
         # check consistance of model class and xml elements types
         if len(xcls - icls.keys()) > 0:
-            raise RuntimeError(f"Xml element class {xcls - icls.keys()} is not defined in model.")
+            raise RuntimeError(f"{unquote(root.base)}, xml element class {xcls - icls.keys()} is not defined in model.")
         elif len(icls.keys() - xcls) > 0:
-            logger.warning(f"Class {icls.keys() - xcls} defined in model is not found in xml")
+            logger.debug(f"{unquote(root.base)}, class {icls.keys() - xcls} defined in model is not found in xml")
 
         # build mapped object related model
         obj_map = dict( )
@@ -115,7 +115,7 @@ class XmlMapper(object):
 
     
     @staticmethod
-    def is_valid_number(num: int, count) -> bool:
+    def is_valid_number(num: int, count: Tuple[int,int]) -> bool:
         if type(count) == int:
             return num == count
         elif type(count) == tuple:
@@ -154,14 +154,14 @@ class XmlLinker(object):
         all_cls = chain.from_iterable( [ [ cls for cls in get_all_class_types(model_cls) ] for model_cls in model_cls_list ] )
         
         for cls in all_cls:
-            logger.info(f"Initializing class '{cls.__qualname__}'...")
+            logger.debug(f"Initializing class '{cls.__qualname__}'...")
 
-            for name, field in cls.getFields():
+            for name, field in cls.getFieldItems():
                 if type(field) not in [ ForeignKeyField, ForeignKeyArrayField ]:
                     continue
 
-                # initialize closure
-                logger.info(f"  - field '{name}' finder.")
+                # initialize
+                logger.debug(f"  - field '{name}' finder.")
                 if field.finder is None:
                     raise RuntimeError(f"ForeignKeyField '{name}' of '{cls.__qualname__}' has no finder assigned.")
                 elif not callable(field.finder):
@@ -173,7 +173,7 @@ class XmlLinker(object):
     def link(self):
         models = chain.from_iterable( [ orm.values() for orm in self.orm_list ] )
         for model in models:
-            for name, field in model.getFields():
+            for name, field in model.getFieldItems():
                 if type(field) == ForeignKeyField:
                     filled = field.finder(self.env_vars, model)
 
