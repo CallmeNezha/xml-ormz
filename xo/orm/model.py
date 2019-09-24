@@ -272,7 +272,7 @@ class Model(dict, metaclass=ModelMetaclass):
         if self.getParentClassName() is None:
             return None
         else:
-            getattr(self, f'__parent{self.getParentClassName()}')
+            return getattr(self, f'__parent{self.getParentClassName()}')
 
     def setParent(self, parent:'Model'):
         if not parent.isChildClass(self.__class__):
