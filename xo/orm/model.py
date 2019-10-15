@@ -252,6 +252,15 @@ class Model(dict, metaclass=ModelMetaclass):
 
         self[key] = value
 
+    def __hash__(self):
+        return hash(id(self))
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return hash(id(self))==hash(id(other))
+        else:
+            return False         
+
     def getAttr(self, key):
         return getattr(self, key, None)
 
