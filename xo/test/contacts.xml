@@ -1,0 +1,11 @@
+<Contacts>
+    <Person name="Alice" address="Wonderland Street No.231">
+        <Email>513754619@mail.com</Email>
+    	<Phone number="513754619"/>
+        <Phone number="611953242"/>
+    </Person> 
+    <Person name="Rabbit" address="Moon Street No.1">
+        <Email>645118456@gmail.com</Email>
+    	<Phone number="645118456"/>
+    </Person> 
+</Contacts>

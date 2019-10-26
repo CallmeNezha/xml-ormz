@@ -1,0 +1,1 @@
+python -m unittest discover ./xo/test "*_test.py" -v
