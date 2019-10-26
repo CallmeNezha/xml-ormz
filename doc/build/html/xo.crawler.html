@@ -1,0 +1,273 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh_CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>xo.crawler package &#8212; xml-ormz 0.0.12 文档</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="index" title="索引" href="genindex.html" />
+    <link rel="search" title="搜索" href="search.html" />
+    <link rel="next" title="xo.orm package" href="xo.orm.html" />
+    <link rel="prev" title="xo package" href="xo.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="xo-crawler-package">
+<h1>xo.crawler package<a class="headerlink" href="#xo-crawler-package" title="永久链接至标题">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="永久链接至标题">¶</a></h2>
+</div>
+<div class="section" id="module-xo.crawler.common">
+<span id="xo-crawler-common-module"></span><h2>xo.crawler.common module<a class="headerlink" href="#module-xo.crawler.common" title="永久链接至标题">¶</a></h2>
+<dl class="function">
+<dt id="xo.crawler.common.get_all_class_types">
+<code class="sig-prename descclassname">xo.crawler.common.</code><code class="sig-name descname">get_all_class_types</code><span class="sig-paren">(</span><em class="sig-param">cls: Type</em><span class="sig-paren">)</span> &#x2192; List[Type]<a class="headerlink" href="#xo.crawler.common.get_all_class_types" title="永久链接至目标">¶</a></dt>
+<dd><p>Get all nested class type from class given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">参数</dt>
+<dd class="field-odd"><p><strong>cls</strong> – class type object.</p>
+</dd>
+<dt class="field-even">返回</dt>
+<dd class="field-even"><p>List of nested class.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="xo.crawler.common.read_xml_without_namespace">
+<code class="sig-prename descclassname">xo.crawler.common.</code><code class="sig-name descname">read_xml_without_namespace</code><span class="sig-paren">(</span><em class="sig-param">xml_file: str</em><span class="sig-paren">)</span> &#x2192; lxml.etree._Element<a class="headerlink" href="#xo.crawler.common.read_xml_without_namespace" title="永久链接至目标">¶</a></dt>
+<dd><p>This function receive a xml file and return an etree of this xml without any namespace related symbols.</p>
+<p class="rubric">示例</p>
+<p>{<a class="reference external" href="http://www.omg.org/XMI">http://www.omg.org/XMI</a>}version -&gt; version
+conf:Conf -&gt; Conf</p>
+<dl class="field-list simple">
+<dt class="field-odd">引发</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(在 Python v3.8)"><strong>Exception</strong></a> – Bug</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="xo.crawler.common.strip_xpath_index">
+<code class="sig-prename descclassname">xo.crawler.common.</code><code class="sig-name descname">strip_xpath_index</code><span class="sig-paren">(</span><em class="sig-param">xpath: str</em><span class="sig-paren">)</span><a class="headerlink" href="#xo.crawler.common.strip_xpath_index" title="永久链接至目标">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">参数</dt>
+<dd class="field-odd"><p><strong>xpath</strong> – Xpath string.</p>
+</dd>
+<dt class="field-even">返回</dt>
+<dd class="field-even"><p>/A/B[1]/C[2] –&gt; /A/B/C</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="xo.crawler.common.xml2file">
+<code class="sig-prename descclassname">xo.crawler.common.</code><code class="sig-name descname">xml2file</code><span class="sig-paren">(</span><em class="sig-param">root: lxml.etree._Element</em>, <em class="sig-param">path: str</em><span class="sig-paren">)</span><a class="headerlink" href="#xo.crawler.common.xml2file" title="永久链接至目标">¶</a></dt>
+<dd><p>Write etree root to file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">参数</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root</strong> – Etree root element.</p></li>
+<li><p><strong>path</strong> – File path to write.</p></li>
+</ul>
+</dd>
+<dt class="field-even">引发</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(在 Python v3.8)"><strong>IOError</strong></a> – Failed to write file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="xo.crawler.common.xml2tree">
+<code class="sig-prename descclassname">xo.crawler.common.</code><code class="sig-name descname">xml2tree</code><span class="sig-paren">(</span><em class="sig-param">path: str</em><span class="sig-paren">)</span> &#x2192; lxml.etree._Element<a class="headerlink" href="#xo.crawler.common.xml2tree" title="永久链接至目标">¶</a></dt>
+<dd><p>Read etree from xml file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">参数</dt>
+<dd class="field-odd"><p><strong>path</strong> – Xml file path.</p>
+</dd>
+<dt class="field-even">返回</dt>
+<dd class="field-even"><p>Etree.</p>
+</dd>
+<dt class="field-odd">引发</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(在 Python v3.8)"><strong>IOError</strong></a> – Failed to read file.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(在 Python v3.8)"><strong>Exception</strong></a> – Bug</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-xo.crawler.spider">
+<span id="xo-crawler-spider-module"></span><h2>xo.crawler.spider module<a class="headerlink" href="#module-xo.crawler.spider" title="永久链接至标题">¶</a></h2>
+<dl class="class">
+<dt id="xo.crawler.spider.XmlLinker">
+<em class="property">class </em><code class="sig-prename descclassname">xo.crawler.spider.</code><code class="sig-name descname">XmlLinker</code><span class="sig-paren">(</span><em class="sig-param">orm_list: List[Dict[str, Model]], model_cls_list: List[type]</em><span class="sig-paren">)</span><a class="headerlink" href="#xo.crawler.spider.XmlLinker" title="永久链接至目标">¶</a></dt>
+<dd><p>基类：<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(在 Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Linker of xml mappers, use user provide <cite>finder</cite> to link objects’ relationships.</p>
+<dl class="method">
+<dt id="xo.crawler.spider.XmlLinker.link">
+<code class="sig-name descname">link</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xo.crawler.spider.XmlLinker.link" title="永久链接至目标">¶</a></dt>
+<dd><p>Call every <cite>finder</cite> to find object reference to assign <cite>ForignKey</cite> field of model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="xo.crawler.spider.XmlLinker.set_env">
+<code class="sig-name descname">set_env</code><span class="sig-paren">(</span><em class="sig-param">env_vars</em><span class="sig-paren">)</span><a class="headerlink" href="#xo.crawler.spider.XmlLinker.set_env" title="永久链接至目标">¶</a></dt>
+<dd><p>Set environment variables that <cite>finder`s (first argument of `finder</cite> function call) needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">参数</dt>
+<dd class="field-odd"><p><strong>env_vars</strong> – Dictionary of variables.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="xo.crawler.spider.XmlMapper">
+<em class="property">class </em><code class="sig-prename descclassname">xo.crawler.spider.</code><code class="sig-name descname">XmlMapper</code><span class="sig-paren">(</span><em class="sig-param">xml: str</em>, <em class="sig-param">model_cls: type</em><span class="sig-paren">)</span><a class="headerlink" href="#xo.crawler.spider.XmlMapper" title="永久链接至目标">¶</a></dt>
+<dd><p>基类：<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(在 Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Xml Mapper to convert xml etree to model objects.</p>
+<dl class="method">
+<dt id="xo.crawler.spider.XmlMapper.is_valid_number">
+<em class="property">static </em><code class="sig-name descname">is_valid_number</code><span class="sig-paren">(</span><em class="sig-param">num: int, count: Tuple[int, int]</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#xo.crawler.spider.XmlMapper.is_valid_number" title="永久链接至目标">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="xo.crawler.spider.XmlMapper.parse">
+<code class="sig-name descname">parse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xo.crawler.spider.XmlMapper.parse" title="永久链接至目标">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">返回</dt>
+<dd class="field-odd"><p>Python native objects that converted from xml elements.</p>
+</dd>
+<dt class="field-even">引发</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(在 Python v3.8)"><strong>RuntimeError</strong></a> – If root(xml type) is not expected or <cite>__count__</cite> constraints is vialated.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(在 Python v3.8)"><strong>ValueError</strong></a> – If attribute’s value is not expected.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-xo.crawler">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-xo.crawler" title="永久链接至标题">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">xml-ormz</a></h1>
+
+
+
+
+
+
+
+
+<h3>导航</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">xo</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="xo.html">xo package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="xo.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">xo.crawler package</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#module-xo.crawler.common">xo.crawler.common module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#module-xo.crawler.spider">xo.crawler.spider module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#module-xo.crawler">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="xo.orm.html">xo.orm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="xo.template.html">xo.template package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="xo.html#module-xo">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">xo</a><ul>
+  <li><a href="xo.html">xo package</a><ul>
+      <li>Previous: <a href="xo.html" title="上一章">xo package</a></li>
+      <li>Next: <a href="xo.orm.html" title="下一章">xo.orm package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">快速搜索</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="转向" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, ZIJIAN JIANG.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/xo.crawler.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
