@@ -16,16 +16,30 @@ from ..orm import Model
 
 
 class XmlMapper(object):
+    """Xml Mapper to convert xml etree to model objects.
     """
-    Xml Mapper
-    """
-    def __init__(self, xml, model_cls):
+    def __init__(self, xml:str, model_cls:type):
+        """Initializtion of XmlMapper
+
+        Args:
+            xml: Xml file path.
+            model_cls: `Model` class
+
+        """
         self.xml = xml
         self.tree = read_xml_without_namespace(xml)
         self.model_cls = model_cls
 
     def parse(self):
-        
+        """
+        Returns:
+            Python native objects that converted from xml elements.
+
+        Raises:
+            RuntimeError: If root(xml type) is not expected or `__count__` constraints is vialated.
+            ValueError: If attribute's value is not expected.
+
+        """
         # xml elements
         tree = self.tree
         root = tree.getroot()
@@ -92,7 +106,7 @@ class XmlMapper(object):
                     assign_items["text"] = elem.text.strip()
 
             except ValueError:
-                raise ValueError(f"Error type of field '{k}' of '{cls}', got '{type(v)}', expect '{field}'.")
+                raise ValueError(f"File {unquote(elem.base)}, line {elem.sourceline}, error type of field '{k}' of '{cls}', got '{type(v)}', expect '{field}'.")
                     
 
             # create object of class
@@ -146,10 +160,16 @@ class XmlMapper(object):
 
 
 class XmlLinker(object):
+    """Linker of xml mappers, use user provide `finder` to link objects' relationships.
+
     """
-    Linker of xml mappers
-    """
-    def __init__(self, orm_list, model_cls_list):
+    def __init__(self, orm_list:List[Dict[str,'Model']], model_cls_list:List[type]):
+        """Initialiation of XmlLinker
+
+        Args:
+            orm_list: List of `orm_map` returned from `XmlMapper.Parse`.
+            model_cls_list: List of all `Model` classes.
+        """
         self.orm_list = orm_list
         all_cls = chain.from_iterable( [ [ cls for cls in get_all_class_types(model_cls) ] for model_cls in model_cls_list ] )
         
@@ -168,9 +188,16 @@ class XmlLinker(object):
                     raise RuntimeError(f"ForeignKeyField '{name}' of '{cls.__qualname__}' has finder is not callable.")
 
     def set_env(self, env_vars):
+        """Set environment variables that `finder`s (first argument of `finder` function call) needed.
+
+        Args:
+            env_vars: Dictionary of variables.
+        """
         self.env_vars = env_vars
 
     def link(self):
+        """Call every `finder` to find object reference to assign `ForignKey` field of model.
+        """
         models = chain.from_iterable( [ orm.values() for orm in self.orm_list ] )
         for model in models:
             for name, field in model.getFieldItems():

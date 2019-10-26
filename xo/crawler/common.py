@@ -8,6 +8,18 @@ from lxml import etree, objectify
 # ==========================================
 
 def xml2tree(path: str) -> etree._Element:
+    """Read etree from xml file.
+    
+    Args:
+        path: Xml file path.
+    
+    Returns:
+        Etree.
+
+    Raises:
+        IOError: Failed to read file.
+        Exception: Bug
+    """
     with open(path, "r", encoding="utf-8") as file:
         tree = etree.parse(file)
         
@@ -17,6 +29,14 @@ def xml2tree(path: str) -> etree._Element:
     return tree
 
 def xml2file(root: etree._Element, path: str):
+    """Write etree root to file.
+    Args:
+        root: Etree root element.
+        path: File path to write.
+
+    Raises:
+        IOError: Failed to write file.
+    """
     with open(path, mode='wb') as file:
         parser = etree.XMLParser(encoding='utf-8',remove_blank_text=True)
         string = str(etree.tostring(root, pretty_print=True, encoding='unicode'))
@@ -27,20 +47,23 @@ def xml2file(root: etree._Element, path: str):
 
 def strip_xpath_index(xpath: str):
     """
-    /A/B[1]/C[2] --> /A/B/C
+    Args:
+        xpath: Xpath string.
+
+    Returns:
+        /A/B[1]/C[2] --> /A/B/C
     """
     return re.sub("\[\d+\]", "", xpath)
 
 
 def get_all_class_types(cls: Type) -> List[Type]:
-    """
-    Get all nested class type from class given
+    """Get all nested class type from class given.
 
-    Parameters:
-        cls - class type object
+    Args:
+        cls: class type object.
 
-    Return:
-        list of nested class
+    Returns:
+        List of nested class.
     """
     cls_list = [cls]
 
@@ -58,11 +81,14 @@ def get_all_class_types(cls: Type) -> List[Type]:
     return cls_list
 
 def read_xml_without_namespace(xml_file: str) -> etree._Element:
-    '''
-    This function receive a xml file and return an etree of this xml without any namespace related symbols.
+    '''This function receive a xml file and return an etree of this xml without any namespace related symbols.
+
     Eg: 
         {http://www.omg.org/XMI}version -> version
         conf:Conf -> Conf
+
+    Raises:
+        Exception: Bug
     '''
     # remove annotation in the origin xml #
     parser = etree.XMLParser(remove_comments=True)

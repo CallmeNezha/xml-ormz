@@ -16,6 +16,8 @@ from ..orm.field import StringField, IntegerField, FloatField
 
 
 class GenericFieldMatcher(object):
+    """Generic field matcher to estimate propriate field from value.
+    """
     __slots__ = [ 'fieldtype', 'is_optional' ]
     def __init__(self):
         
@@ -24,7 +26,11 @@ class GenericFieldMatcher(object):
 
 
     def match(self, value: Union[None, str, int, float]):
-
+        """Estimate propriate field from value, and update `fieldtype`
+        
+        Args:
+            value: Value
+        """
         if value is None:
             self.is_optional = True
 
@@ -61,11 +67,13 @@ def main():
     parser.add_argument("-o", "--out", help="output model file", type=str, default="model.py")
 
     args = parser.parse_args()
-    generate_pycode_from_xml(args.files, args.out)
+    write_model_py_from_xml(args.files, args.out)
     print(f"xml-ormz: Class template is written into file: {args.out}")
 
 
-def generate_pycode_from_xml(xmlfiles: List[str], out="model.py"):
+def write_model_py_from_xml(xmlfiles: List[str], out="model.py"):
+    """Write model.py from xml files of same type.
+    """
     for arg_file in xmlfiles:
         if not os.path.isfile(arg_file):
             print("File {} is not valid".format(arg_file))
@@ -76,7 +84,15 @@ def generate_pycode_from_xml(xmlfiles: List[str], out="model.py"):
         file.write( generate_pycode(meta) )
     
 
-def generate_pycode(meta_class):
+def generate_pycode(meta_class:type) -> str:
+    """Generate pycode text from meta_class
+    
+    Args:
+        meta_class: Python model class.
+
+    Returns:
+        Python code text.
+    """
     from jinja2 import Template
     dir_path = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(dir_path, "template"), "r") as file:
@@ -85,9 +101,14 @@ def generate_pycode(meta_class):
         return text
 
 
-def get_meta_class(files: List[str]):
-    """
-    Get meta class information of xml files of same type( same root tag )
+def get_meta_class(files: List[str]) -> type:
+    """Get meta class information of xml files of same type( same root tag )
+
+    Args:
+        files: List of xml files of same type.
+
+    Returns:
+        Python model class.
     """
     cls_attributes = defaultdict( lambda: set( ) )
     cls_attributes_types = defaultdict( lambda: defaultdict( lambda: GenericFieldMatcher() ) )

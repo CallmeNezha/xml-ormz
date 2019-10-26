@@ -2,7 +2,7 @@
 
 **Authors:** ZIJIAN JIANG
 
-**29 Aug 2019**: Alpha version.
+**26 Oct 2019**: Alpha version.
 
 
 
@@ -12,10 +12,7 @@ xml-ormz is a orm(Object-relational mapping) library for mapping a collection of
 
 # 1. Installation
 
-Command below will do the trick, if you want logging with color, it is optional to install `coloredlogs`.
-
 `pip install xml-ormz` 
-
 
 
 # 2. Example
