@@ -3,6 +3,7 @@ from lxml import etree
 from .field import StringField, FloatField, IntegerField
 from .field import Optional
 
+
 def toElement(model) -> etree._Element:
     """Convert model into etree element.
     TODO: maybe rewrite it into none recursive callback will be better,

@@ -103,9 +103,9 @@ class ForeignKeyArrayField(ForeignKeyField):
 
 
 class StringField(Field):
-    """ String Field
+    """String Field
 
-    Attributes:
+    Args:
         name: inherit from Field
         primary_key: inherit from Field
         default: inherit from Field

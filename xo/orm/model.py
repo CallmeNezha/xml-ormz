@@ -87,46 +87,46 @@ class Model(dict, metaclass=ModelMetaclass):
 
     Model class is native **python class** which defines element class, attributes corresponding to xml elements.
 
-    For example:
-
+    Example:
+    
         Xml File - literatures.xml:
-        -------------
-        <Author name="Jack">
-            <Book name="XML tutorial" year="1992" ISBN="1928-01832">
-            <Book name="Python tutorial" ISBN="7629-37669">
-        </Author>
+
+            <Author name="Jack">
+                <Book name="XML tutorial" year="1992" ISBN="1928-01832">
+                <Book name="Python tutorial" ISBN="7629-37669">
+            </Author>
 
         Python model - literature_model.py:
-        -------------
-        class Author(Model):
-            name = StringField()
-            class Book(Model):
+
+            class Author(Model):
                 name = StringField()
-                year = Optional(IntegerField())
-                ISBN = StringField(r=r'^\d{4}-\d{5}$')
-                __count__ = (1,) # At least 1 book, or you will not be an author.
+                class Book(Model):
+                    name = StringField()
+                    year = Optional(IntegerField())
+                    ISBN = StringField(r=r'^\d{4}-\d{5}$')
+                    __count__ = (1,) # At least 1 book, or you will not be an author.
 
         Python script - main.py:
-        -------------
-        from xo.spider import XmlMapper
-        from literature_model import Author
 
-        obj_map = XmlMapper("literatures.xml", Author)
-        # obj_map: Key is Xpath(which is unique), Value is instance of python object
-        # {
-        #   "Author": <object Class Author>,
-        #   "Author/Book[1]": <object Class Book>, # In Xpath syntax, index is begin with 1 not zero.
-        #   "Author/Book[2]": <object Class Book>
-        # }
+            from xo.spider import XmlMapper
+            from literature_model import Author
 
-        obj_map["Author"].name 
-        # returns: "Jack"
-        obj_map["Author"].getChildren()[0].name 
-        # returns: "XML tutorial"
-        obj_map["Author"].getChildren()[0].year
-        # returns: 1992
-        obj_map["Author"].getChildren()[1].year
-        # returns: None
+            obj_map = XmlMapper("literatures.xml", Author)
+            # obj_map: Key is Xpath(which is unique), Value is instance of python object
+            # {
+            #   "Author": <object Class Author>,
+            #   "Author/Book[1]": <object Class Book>, # In Xpath syntax, index is begin with 1 not zero.
+            #   "Author/Book[2]": <object Class Book>
+            # }
+
+            obj_map["Author"].name 
+            # returns: "Jack"
+            obj_map["Author"].getChildren()[0].name 
+            # returns: "XML tutorial"
+            obj_map["Author"].getChildren()[0].year
+            # returns: 1992
+            obj_map["Author"].getChildren()[1].year
+            # returns: None
 
     """
     def __init__(self, **kwargs):
@@ -494,10 +494,36 @@ class Model(dict, metaclass=ModelMetaclass):
         """
         return chain.from_iterable( [ getattr(self, f'__child{childcls.getClassName()}') for childcls in self.getChildClasses() ] )
 
-    def getChildren(self):
+    def getChildren(self, classname=None, *, recursive=False):
         """Return children list.
+
+        Args:
+            classname: Class name of children
+            recursive: Recursively iterate children
+
+        Returns:
+            List of children
         """
-        return list( self.getChildrenIter() )
+        if classname is None and recursive:
+            raise RuntimeError("Argument classname is None when recursive.")
+        elif classname is None and not recursive:
+            return list( self.getChildrenIter() ) 
+
+        elif classname != None and not recursive:
+            return [ child for child in self.getChildrenIter() if child.getClassName() == classname ]
+        elif classname != None and recursive:
+            cl = []
+            for child in self.getChildrenIter():
+                if child.getClassName() == classname:
+                    cl.append(child)
+
+                cl += child.getChildren(classname, recursive=recursive)
+            
+            return cl
+        else:
+            raise RuntimeError("Maybe a bug here.")
+
+        
     
     def toElement(self):
         """Convert object into etree.Element

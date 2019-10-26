@@ -30,6 +30,7 @@ def xml2tree(path: str) -> etree._Element:
 
 def xml2file(root: etree._Element, path: str):
     """Write etree root to file.
+    
     Args:
         root: Etree root element.
         path: File path to write.
@@ -47,6 +48,7 @@ def xml2file(root: etree._Element, path: str):
 
 def strip_xpath_index(xpath: str):
     """
+
     Args:
         xpath: Xpath string.
 
@@ -83,7 +85,7 @@ def get_all_class_types(cls: Type) -> List[Type]:
 def read_xml_without_namespace(xml_file: str) -> etree._Element:
     '''This function receive a xml file and return an etree of this xml without any namespace related symbols.
 
-    Eg: 
+    Example: 
         {http://www.omg.org/XMI}version -> version
         conf:Conf -> Conf
 
