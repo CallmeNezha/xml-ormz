@@ -1,16 +1,9 @@
-from xo.crawler.spider import XmlMapper, XmlLinker
+from xo.orm.mapper import XmlMapper
 from xo.orm import Model, StringField, IntegerField, Optional, ForeignKeyField
 
 import os
 import unittest
 
-def owner_finder(env_vars, apartment):
-    """Owner finder for apartment
-    """
-    if apartment.owner:
-        return env_vars['persons'][apartment.owner]
-    else:
-        return None
 
 # Model for contacts.xml
 class Contacts(Model):

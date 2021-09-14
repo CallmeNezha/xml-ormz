@@ -1,1 +1,1 @@
-from .generate import generate_pycode_from_xml
+from .generate import generate_pycode

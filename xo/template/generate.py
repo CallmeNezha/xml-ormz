@@ -10,8 +10,8 @@ from typing import Union, Optional, List
 from collections import defaultdict
 
 from lxml import etree
-from ..crawler.common import strip_xpath_index, read_xml_without_namespace
-from ..orm.field import StringField, IntegerField, FloatField
+from xo.orm.common import strip_xpath_index, read_xml_without_namespace
+from xo.orm.field import StringField, IntegerField, FloatField
 
 
 

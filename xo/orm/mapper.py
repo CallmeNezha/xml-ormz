@@ -7,11 +7,11 @@ from typing import List, Dict, Tuple, Any
 from urllib.parse import unquote 
 
 from lxml import etree
-from .. import logger
+from xo import logger
 
-from .common import strip_xpath_index, get_all_class_types, read_xml_without_namespace
-from ..orm.field import Field, Optional, FloatField, StringField, IntegerField, ForeignKeyField, ForeignKeyArrayField
-from ..orm import Model
+from xo.orm.common import strip_xpath_index, get_all_class_types, read_xml_without_namespace
+from xo.orm.field import Field, Optional, FloatField, StringField, IntegerField, ForeignKeyField, ForeignKeyArrayField
+from xo.orm import Model
 
 
 
@@ -138,92 +138,5 @@ class XmlMapper(object):
             raise RuntimeError("Probably a bug here. Please contact developer.")
 
 
-
-    # def paths_meta(self, xpaths:List[str]):
-    #     """
-    #     Get path meta information of all xpaths in one xml.
-
-    #     Parameters:
-    #         xpaths - xpaths starting from root
-    #                    of all elements [ /A, /A/B[1], /A/B[1]/C ... ]
-        
-    #     Return:
-    #         dict { xpath: is_multiple:bool }
-    #     """
-    #     is_multiple = defaultdict(lambda: False)
-    #     # split index numbers
-    #     prog = re.compile('.+\[(\d+)\]$')
-    #     for x in xpaths:
-    #         is_multiple[ strip_xpath_index(x) ] |= prog.match(x) is not None
-    #     #endfor
-    #     return is_multiple
-
-
-class XmlLinker(object):
-    """Linker of xml mappers, use user provide `finder` to link objects' relationships.
-
-    """
-    def __init__(self, orm_list:List[Dict[str,'Model']], model_cls_list:List[type]):
-        """Initialiation of XmlLinker
-
-        Args:
-            orm_list: List of `orm_map` returned from `XmlMapper.Parse`.
-            model_cls_list: List of all `Model` classes.
-        """
-        self.orm_list = orm_list
-        all_cls = chain.from_iterable( [ [ cls for cls in get_all_class_types(model_cls) ] for model_cls in model_cls_list ] )
-        
-        for cls in all_cls:
-            logger.debug(f"Initializing class '{cls.__qualname__}'...")
-
-            for name, field in cls.getFieldItems():
-                if type(field) not in [ ForeignKeyField, ForeignKeyArrayField ]:
-                    continue
-
-                # initialize
-                logger.debug(f"  - field '{name}' finder.")
-                if field.finder is None:
-                    raise RuntimeError(f"ForeignKeyField '{name}' of '{cls.__qualname__}' has no finder assigned.")
-                elif not callable(field.finder):
-                    raise RuntimeError(f"ForeignKeyField '{name}' of '{cls.__qualname__}' has finder is not callable.")
-
-    def set_env(self, env_vars):
-        """Set environment variables that `finder`s (first argument of `finder` function call) needed.
-
-        Args:
-            env_vars: Dictionary of variables.
-        """
-        self.env_vars = env_vars
-
-    def link(self):
-        """Call every `finder` to find object reference to assign `ForignKey` field of model.
-        """
-        models = chain.from_iterable( [ orm.values() for orm in self.orm_list ] )
-        for model in models:
-            for name, field in model.getFieldItems():
-                if type(field) == ForeignKeyField:
-                    filled = field.finder(self.env_vars, model)
-
-                    if filled == None:
-                        logger.warning(f"ForeignKeyField '{name}' of '{model.__class__.__qualname__}' find nothing for '{model}'.")
-
-                    setattr(model, name, filled)
-                    
-                # array
-                elif type(field) == ForeignKeyArrayField:
-                    filled = field.finder(self.env_vars, model)
-                    
-                    if filled == None:
-                        logger.warning(f"ForeignKeyField '{name}' of '{model.__class__.__qualname__}' find nothing for '{model}'")
-                        filled = [ ]
-
-                    if len(filled) == 0:
-                        logger.warning(f"ForeignKeyField '{name}' of '{model.__class__.__qualname__}' find nothing for '{model}'")
-                
-                    setattr(model, name, filled)
-
-                
-
-                        
 
     
