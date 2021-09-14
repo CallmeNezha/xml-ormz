@@ -103,7 +103,7 @@ class Addresses(Model):
 # hello.py
 
 from model import Contacts, Addresses
-from xo.crawler import XmlMapper
+from xo.orm.mapper import XmlMapper
 
 address_map = XmlMapper("./addresses.xml", Addresses).parse()
 contact_map = XmlMapper("./contacts.xml", Contacts).parse()
